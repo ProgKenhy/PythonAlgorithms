@@ -201,7 +201,7 @@ def visualize_nested_triangles(points):
 
     # Для PyCharm проблем с показом графиков можно использовать сохранение в файл
     # и обходной метод для отображения
-    filename = "../4_KMP_search/nested_triangles_result.png"
+    filename = "../Lab4/nested_triangles_result.png"
     plt.savefig(filename)
     print(f"График сохранен в файл: {filename}")
 
