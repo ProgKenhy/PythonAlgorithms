@@ -57,21 +57,21 @@ def run_tests():
     print("=" * 50)
 
     # Тест на производительность с длинной строкой
-    long_text = "a" * 10000 + "b" * 100 + "a" * 10000
-    pattern_simple = "abb"
+    long_text = "a" * 10000
+    pattern_simple = "aaa"
     pattern_complex = "b" * 50 + "a"
 
     print(f"\n[Производительность 1]: Поиск '{pattern_simple}' в длинной строке:")
-    naive_timed(long_text, pattern_simple)
-    kmp_timed(long_text, pattern_simple)
+    print(f"naive_timed: {naive_timed(long_text, pattern_simple)}")
+    print(f"kmp_timed: {kmp_timed(long_text, pattern_simple)}")
     bm_timed(long_text, pattern_simple)
-    bm_suffix_timed(long_text, pattern_simple)
+    print(f"bm_suffix_timed: {bm_suffix_timed(long_text, pattern_simple)}")
 
     print(f"\n[Производительность 2]: Поиск '{pattern_complex}' в длинной строке:")
-    naive_timed(long_text, pattern_complex)
-    kmp_timed(long_text, pattern_complex)
+    print(f"naive_timed: {naive_timed(long_text, pattern_complex)}")
+    print(f"kmp_timed: {kmp_timed(long_text, pattern_complex)}")
     bm_timed(long_text, pattern_complex)
-    print(f"BM_suffix: {bm_suffix_timed(ex_str3, find_3)}")
+    print(f"BM_suffix: {bm_suffix_timed(long_text, pattern_complex)}")
 
 
 if __name__ == "__main__":

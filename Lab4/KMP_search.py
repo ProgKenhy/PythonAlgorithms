@@ -19,16 +19,15 @@ def kmp(my_str: str, pattern:str) -> tuple[int, int]:
     proverok = 0
     compare_index = 0
     for i in range(len(my_str)):
+        proverok += 1
         while (compare_index > 0) and (my_str[i] != pattern[compare_index]):
             compare_index = lps[compare_index - 1]
             proverok += 1
 
         if my_str[i] == pattern[compare_index]:
             compare_index += 1
-            proverok += 1
 
         if compare_index == len(pattern):
-            proverok += 1
             count += 1
             compare_index = lps[len(pattern) - 1]
     return count, proverok
