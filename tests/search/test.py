@@ -1,8 +1,21 @@
 from Lab4.KMP_search import kmp, prefix_func
 from Lab5.BM_search import bm
 from Lab5.BM_search_with_suffix import bm_suffix
+from Lab6.RK_search import get_substring_rk
 from naive import naive_find
 from timer import timer_decorator
+
+
+def run_search_test(test_label: str, text: str, pattern: str, algos: dict):
+    """
+    Функция для запуска теста поиска подстроки.
+    Выводит заголовок теста, затем для каждого алгоритма – его название и результат.
+    """
+    text_display = text if len(text) <= 50 else text[:50] + "..."
+    print(f"\n[{test_label}]: В '{text_display}' ищем '{pattern}':")
+    for name, func in algos.items():
+        result = func(text, pattern)
+        print(f"{name}: {result}")
 
 
 def run_tests():
@@ -10,68 +23,57 @@ def run_tests():
     print("ДЕМОНСТРАЦИЯ АЛГОРИТМОВ ПОИСКА ПОДСТРОК")
     print("=" * 50)
 
-    # Тест 1: Префикс-функция
+    # Тест 1: Префикс-функция KMP
     ex_str2 = 'aabaabaaaabaabaaab'
     print("\n[Тест 1]: Демонстрация массива префикс функции KMP:")
     print('Строка: A A B A A B A A A A B A A B A A A B')
-    print('Префик:', *prefix_func(ex_str2))
+    print('Префикс:', *prefix_func(ex_str2))
 
-    # Оборачиваем вызовы функций декоратором timer_decorator при тестировании
-    naive_timed = timer_decorator(naive_find)
-    kmp_timed = timer_decorator(kmp)
-    bm_timed = timer_decorator(bm)
-    bm_suffix_timed = timer_decorator(bm_suffix)
+    # Оборачиваем алгоритмы в декоратор для измерения времени
+    algorithms = {
+        "Naive": timer_decorator(naive_find),
+        "KMP": timer_decorator(kmp),
+        "BM": timer_decorator(bm),
+        "BM_suffix": timer_decorator(bm_suffix),
+        "RK": timer_decorator(get_substring_rk),
+    }
 
-    # Тест 2: Поиск в строке
+    # Тест 2: Поиск в строке ex_str2
     finding = 'ababa'
-    print(f"\n[Тест 2]: В '{ex_str2}' ищем '{finding}':")
-    print(f"Naive: {naive_timed(ex_str2, finding)}")
-    print(f"KMP: {kmp_timed(ex_str2, finding)}")
-    print(f"BM: {bm_timed(ex_str2, finding)}")
-    print(f"BM_suffix: {bm_suffix_timed(ex_str2, finding)}")
+    run_search_test("Тест 2", ex_str2, finding, algorithms)
 
     # Тест 3: Поиск в файле
     try:
         with open('test.txt', 'r', encoding="utf-8") as f:
-            text = f.read()
+            file_text = f.read()
             find_this = 'дуб'
-            print(f"\n[Тест 3]: В 'test.txt' ищем '{find_this}':")
-            print(f"Naive: {naive_timed(text, find_this)}")
-            print(f"KMP: {kmp_timed(text, find_this)}")
-            print(f"BM: {bm_timed(text, find_this)}")
-            print(f"BM_suffix: {bm_suffix_timed(text, find_this)}")
+            run_search_test("Тест 3", file_text, find_this, algorithms)
     except FileNotFoundError:
         print("\n[Тест 3]: Файл 'test.txt' не найден. Пропускаем тест с файлом.")
 
     # Тест 4: Ещё один пример
     ex_str3 = 'abababacab'
     find_3 = 'babac'
-    print(f"\n[Тест 4]: В '{ex_str3}' ищем '{find_3}':")
-    print(f"Naive: {naive_timed(ex_str3, find_3)}")
-    print(f"KMP: {kmp_timed(ex_str3, find_3)}")
-    print(f"BM: {bm_timed(ex_str3, find_3)}")
-    print(f"BM_suffix: {bm_suffix_timed(ex_str3, find_3)}")
+    run_search_test("Тест 4", ex_str3, find_3, algorithms)
 
     print("\n" + "=" * 50)
     print("СРАВНЕНИЕ ПРОИЗВОДИТЕЛЬНОСТИ АЛГОРИТМОВ")
     print("=" * 50)
 
-    # Тест на производительность с длинной строкой
+    # Тесты на производительность с длинной строкой
     long_text = "a" * 10000
     pattern_simple = "aaa"
     pattern_complex = "b" * 50 + "a"
 
     print(f"\n[Производительность 1]: Поиск '{pattern_simple}' в длинной строке:")
-    print(f"naive_timed: {naive_timed(long_text, pattern_simple)}")
-    print(f"kmp_timed: {kmp_timed(long_text, pattern_simple)}")
-    bm_timed(long_text, pattern_simple)
-    print(f"bm_suffix_timed: {bm_suffix_timed(long_text, pattern_simple)}")
+    for name, func in algorithms.items():
+        result = func(long_text, pattern_simple)
+        print(f"{name}: {result}")
 
     print(f"\n[Производительность 2]: Поиск '{pattern_complex}' в длинной строке:")
-    print(f"naive_timed: {naive_timed(long_text, pattern_complex)}")
-    print(f"kmp_timed: {kmp_timed(long_text, pattern_complex)}")
-    bm_timed(long_text, pattern_complex)
-    print(f"BM_suffix: {bm_suffix_timed(long_text, pattern_complex)}")
+    for name, func in algorithms.items():
+        result = func(long_text, pattern_complex)
+        print(f"{name}: {result}")
 
 
 if __name__ == "__main__":
