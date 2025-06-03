@@ -1,4 +1,3 @@
-import math as mt
 from functools import lru_cache
 
 input_matrix = [
