@@ -1,62 +1,72 @@
-from typing import Optional, Literal
+from typing import Dict, Optional, Tuple
 
 
-def can_color(graph, k) -> Optional[dict]:
-    nodes = sorted(graph.keys(), key=lambda node: -len(graph[node]))
-    colors = {}
+def is_coloring_possible(graph: Dict[int, list], max_colors: int) -> Optional[Dict[int, int]]:
+    """Проверяет, можно ли раскрасить граф в заданное количество цветов."""
+    nodes = sorted(graph.keys(), key=lambda n: -len(graph[n]))
+    assigned_colors = {}
 
-    def backtrack(node_index) -> Optional[dict]:
-        if node_index == len(nodes):
-            return colors.copy()
-        current_node = nodes[node_index]
-        for color in range(1, k + 1):
-            if all(colors.get(neighbor) != color for neighbor in graph[current_node]):
-                colors[current_node] = color
-                result = backtrack(node_index + 1)
+    def dfs(node_idx: int) -> Optional[Dict[int, int]]:
+        """Рекурсивно пытается раскрасить граф с помощью backtracking."""
+        if node_idx == len(nodes):
+            return assigned_colors.copy()
+
+        current = nodes[node_idx]
+
+        for color in range(1, max_colors + 1):
+            if all(assigned_colors.get(neighbor) != color for neighbor in graph[current]):
+                assigned_colors[current] = color
+                result = dfs(node_idx + 1)
                 if result is not None:
                     return result
-                del colors[current_node]
+                del assigned_colors[current]
         return None
 
-    return backtrack(0)
+    return dfs(0)
 
 
-def find_min_colors(graph) -> tuple[Literal[0], dict] | tuple[int, dict]:
-    max_degree = max(len(node) for node in graph.values())
-    for k in range(1, max_degree + 2):
-        coloring = can_color(graph, k)
-        if coloring is not None:
-            return k, coloring
-    return len(graph), {node: i + 1 for i, node in enumerate(graph)}
+def minimum_colors(graph: Dict[int, list]) -> Tuple[int, Dict[int, int]]:
+    """Находит минимальное количество цветов для раскраски графа."""
+    max_degree = max(len(neighbors) for neighbors in graph.values())
+    for colors in range(1, max_degree + 2):
+        coloring = is_coloring_possible(graph, colors)
+        if coloring:
+            return colors, coloring
+    return len(graph), {node: index + 1 for index, node in enumerate(graph)}
 
 
 if __name__ == "__main__":
-    graphS = [{
-        0: [1, 3],
-        1: [0, 2],
-        2: [1, 3],
-        3: [0, 2]
-    },
+    examples = [
         {
-            0: [1, 2],
-            1: [0, 2, 3],
-            2: [0, 1, 3],
-            3: [1, 2]
+            0: [2, 4],
+            1: [3],
+            2: [0, 3],
+            3: [1, 2, 5],
+            4: [0, 5],
+            5: [3, 4]
         },
         {
-            0: [1, 4, 5],
-            1: [0, 2, 3, 7],
-            2: [1, 3, 7],
-            3: [1, 2, 4, 6],
-            4: [0, 3, 5, 6],
-            5: [0, 4, 6],
-            6: [3, 4, 5, 7],
-            7: [1, 2, 6]
-        }]
-    for graph in graphS:
-        k, coloring = find_min_colors(graph)
-        print(f"Минимальное количество цветов: {k}")
-        print(f"Раскраска вершин: {coloring}")
-        # Цвет 1 - красный
-        # Цвет 2 - Зелёный
-        # Цвет 3 - синий
+            0: [1, 3],
+            1: [0, 2, 4],
+            2: [1, 5],
+            3: [0, 4],
+            4: [1, 3, 5],
+            5: [2, 4]
+        },
+        {
+            0: [1, 2, 3],
+            1: [0, 4],
+            2: [0, 5],
+            3: [0, 6],
+            4: [1, 7],
+            5: [2, 7],
+            6: [3, 7],
+            7: [4, 5, 6]
+        }
+    ]
+
+    for example_graph in examples:
+        min_colors, color_assignment = minimum_colors(example_graph)
+        print(f"Минимальное количество цветов: {min_colors}")
+        print(f"Раскраска вершин: {color_assignment}")
+        print()
