@@ -1,87 +1,48 @@
-import random
-import matplotlib.pyplot as plt
-import networkx as nx
 import math as mt
-from bitarray import bitarray
+from functools import lru_cache
+
+input_matrix = [
+    [0, 29, 82, 46, 68, 52, 72, 42, 51, 55, 99, 74, 23],
+    [29, 0, 55, 46, 42, 43, 43, 23, 23, 31, 41, 51, 11],
+    [82, 55, 0, 68, 46, 55, 23, 43, 41, 29, 79, 21, 64],
+    [46, 46, 68, 0, 82, 15, 72, 31, 62, 42, 21, 51, 51],
+    [68, 42, 46, 82, 0, 74, 23, 52, 21, 46, 82, 58, 46],
+    [52, 43, 55, 15, 74, 0, 61, 23, 55, 31, 33, 37, 51],
+    [72, 43, 23, 72, 23, 61, 0, 42, 23, 31, 77, 37, 51],
+    [42, 23, 43, 31, 52, 23, 42, 0, 33, 15, 37, 33, 33],
+    [51, 23, 41, 62, 21, 55, 23, 33, 0, 29, 62, 46, 29],
+    [55, 31, 29, 42, 46, 31, 31, 15, 29, 0, 51, 21, 41],
+    [99, 41, 79, 21, 82, 33, 77, 37, 62, 51, 0, 65, 42],
+    [74, 51, 21, 51, 58, 37, 37, 33, 46, 21, 65, 0, 61],
+    [23, 11, 64, 51, 46, 51, 51, 33, 29, 41, 42, 61, 0]
+]
 
 
-def distance(x1, y1, x2, y2):
-    return mt.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)
+def tsp_dp(matrix):
+    n = len(matrix)
+
+    # Мемоизация: (текущий город, посещённые города) -> (мин. расстояние, путь)
+    @lru_cache(maxsize=None)
+    def dp(current, visited):
+        if visited == (1 << n) - 1:  # Все города посещены
+            return matrix[current][0], [0]  # Возвращаемся в стартовый город
+        min_dist = 2 ** 31 - 1
+        best_path = []
+        for city in range(n):
+            if not (visited & (1 << city)):  # Если город не посещён
+                dist, path = dp(city, visited | (1 << city))
+                total = matrix[current][city] + dist
+                if total < min_dist:
+                    min_dist = total
+                    best_path = [city] + path
+        return min_dist, best_path
+
+    # Запуск из города 0
+    total_dist, path = dp(0, 1 << 0)
+    path = [0] + path  # Добавляем стартовый город в начало
+    return total_dist, path
 
 
-INF = 2 ** 31 - 1
-
-# random.seed(1)
-
-n = 11
-
-v1 = []
-points = {}
-for i in range(n):
-    points[i] = (random.randint(1, 1000), random.randint(1, 1000))
-
-input_matrix = []
-for i, vi in points.items():
-    m1 = []
-    for j, vj in points.items():
-        if i == j:
-            m1.append(INF)
-        else:
-            m1.append(int(distance(vi[0], vi[1], vj[0], vj[1])))
-            v1.append([i, j, int(distance(vi[0], vi[1], vj[0], vj[1]))])
-    input_matrix.append(m1.copy())
-
-plt.figure(figsize=(8, 8))
-
-graph = nx.Graph()
-graph.add_nodes_from(points)
-
-# Добавляем дуги в граф
-for i in v1:
-    graph.add_edge(i[0], i[1], weight=i[2])
-
-
-# -----------------------------------------------------------------
-def calc_next(m, s, n, src):
-    min = INF
-    best = 255
-    for i, val in enumerate(s.tolist()):
-        if val == 0:
-            s0 = s.copy()
-            s0[i] = 1
-            if n > 2:
-                sum = m[src][i]
-                r = calc_next(m, s0, n - 1, i)
-                sum = sum + r[0]
-                temp = r[1]
-            else:
-                for j, val_j in enumerate(s0.tolist()):
-                    if val_j == 0:
-                        break
-                temp = [j]
-                sum = m[src][i] + m[i][j] + m[j][len(m) - 1]
-            temp.append(i)
-            if sum < min:
-                min = sum
-                best = i
-                temp2 = temp.copy()
-    return [min, temp2]
-
-
-# -----------------------------------------------------------------
-s = bitarray(n - 1)
-s.setall(0)
-r = calc_next(input_matrix, s, n - 1, n - 1);
-r[1].append(n - 1)
-
-print('min:', r[0])
-print(r[1])
-
-d = []
-s = r[1]
-for i, v in enumerate(s):
-    d.append([int(s[i - 1]), int(s[i])])
-
-# Рисуем всё древо
-nx.draw(graph, points, width=1, edge_color="#A0A0A0", with_labels=True)
-nx.draw(graph, points, width=2, edge_color="blue", edgelist=d, style='dashed')
+result = tsp_dp(input_matrix)
+print('Минимальное расстояние:', result[0])
+print('Оптимальный маршрут:', result[1])
